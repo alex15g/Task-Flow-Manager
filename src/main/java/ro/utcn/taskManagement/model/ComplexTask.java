@@ -1,4 +1,4 @@
 package ro.utcn.taskManagement.model;
 
-public class Employee {
+public class ComplexTask {
 }

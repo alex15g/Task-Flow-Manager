@@ -1,4 +1,4 @@
-package ro.utcn.reprezentanta;
+package ro.utcn.taskManagement;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
