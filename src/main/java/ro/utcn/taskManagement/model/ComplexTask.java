@@ -13,6 +13,9 @@ public final class ComplexTask extends Task{
     public void addTask(Task task){
         this.subTasks.add(task);
     }
+    public void deleteTask(Task task){
+        this.subTasks.remove(task);
+    }
 
     public int estimateDuration(){
         int duration = 0;
