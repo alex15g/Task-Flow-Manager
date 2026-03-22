@@ -11,6 +11,7 @@ public sealed abstract class Task implements Serializable permits SimpleTask, Co
         this.statusTask = statusTask;
     }
 
+    // Abstract method to be implemented by Simple and Complex tasks
     public abstract int estimateDuration();
 
     public int getIdTask() {
@@ -28,5 +29,5 @@ public sealed abstract class Task implements Serializable permits SimpleTask, Co
 
     public String toString(){
         return "ID: " + idTask + " Status: " + statusTask;
-    };
+    }
 }

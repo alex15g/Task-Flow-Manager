@@ -6,7 +6,11 @@ import ro.utcn.taskManagement.model.Task;
 import java.util.*;
 
 public class Utility {
-    public static void filtersEmployee(TaskManagement tm){
+    // Filters all employees who have a work duration greater than 40 hours,
+    // sorts them in ascending order according to the work duration,
+    // displays their names in the console, and returns the sorted list for GUI integration.
+    // param->tm The TaskManagement instance. return->A sorted List of Employees with more than 40 hours of work.
+    public static List<Employee> filtersEmployee(TaskManagement tm){
         List<Employee> filteredList=new ArrayList<Employee>();
         Map<Employee, Integer> durations=new HashMap<>();
 
@@ -32,27 +36,31 @@ public class Utility {
         for(Employee e: filteredList){
             System.out.println(e.getName()+ " has " + durations.get(e)+ " completed hours.");
         }
+
+        return filteredList;
     }
 
+    // Computes the statistics of completed and uncompleted tasks for each employee.
+    // param->tm The TaskManagement instance containing the data.
+    // return->A Map linking employee names to their task statistics.
     public static Map<String, Map<String, Integer>> computesTasks(TaskManagement tm){
-        Map<String, Map<String, Integer>> rezStats=new HashMap<>();
-
+        Map<String, Map<String, Integer>> resStats=new HashMap<>();
 
         for(Map.Entry<Employee, List<Task>> entry: tm.getTaskMap().entrySet()){
             String name=entry.getKey().getName();
-            Map<String, Integer> taskCon=new HashMap<>();
-            int completedCon=0;
-            int uncompletedCon=0;
+            Map<String, Integer> taskCount =new HashMap<>();
+            int completedCount =0;
+            int uncompletedCount =0;
             for(Task task: entry.getValue()){
                 if(task.getStatusTask().equalsIgnoreCase("Completed")){
-                    completedCon++;
-                }else uncompletedCon++;
+                    completedCount++;
+                }else uncompletedCount++;
             }
-            taskCon.put("Completed", completedCon);
-            taskCon.put("Uncompleted", uncompletedCon);
+            taskCount.put("Completed", completedCount);
+            taskCount.put("Uncompleted", uncompletedCount);
 
-            rezStats.put(name,taskCon);
+            resStats.put(name, taskCount);
         }
-        return rezStats;
+        return resStats;
     }
 }

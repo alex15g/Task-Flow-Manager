@@ -17,12 +17,17 @@ public final class ComplexTask extends Task{
         this.subTasks.remove(task);
     }
 
+    // Calculates total duration by summing up the durations of all sub-tasks
     public int estimateDuration(){
         int duration = 0;
         for(Task t : this.subTasks){
             duration += t.estimateDuration();
         }
         return duration;
+    }
+
+    public List<Task> getSubTasks() {
+        return subTasks;
     }
 
     public String toString(){

@@ -8,6 +8,8 @@ public final class SimpleTask extends Task{
         this.startHour = startHour;
         this.endHour = endHour;
     }
+
+    // Calculates duration, handling cases where the task passes midnight
     public int estimateDuration(){
         if(startHour > endHour){return endHour+24-startHour;}
         return endHour - startHour;

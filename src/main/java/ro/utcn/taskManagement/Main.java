@@ -1,131 +1,106 @@
+package ro.utcn.taskManagement;
 
-package ro.utcn.taskManagement; // Ajustează pachetul dacă e nevoie
-
-import ro.utcn.taskManagement.dataaccess.SerializationOperations;
 import ro.utcn.taskManagement.logic.TaskManagement;
 import ro.utcn.taskManagement.logic.Utility;
-import ro.utcn.taskManagement.model.ComplexTask;
-import ro.utcn.taskManagement.model.Employee;
-import ro.utcn.taskManagement.model.SimpleTask;
-
+import ro.utcn.taskManagement.model.*;
+import java.util.List;
 import java.util.Map;
-// import ro.utcn.taskManagement.model.Task; // Dacă e nevoie
 
 public class Main {
-    public static void main(String[] args) {
-        // 1. Inițializăm "creierul" aplicației
+    public static void main(String[] args) throws Exception {
         TaskManagement tm = new TaskManagement();
 
-        // 2. Creăm angajații și îi adăugăm în sistem
-        Employee emp1 = new Employee(1, "Alex");
-        Employee emp2 = new Employee(2, "Maria");
-        tm.addEmployee(emp1);
-        tm.addEmployee(emp2);
+        Employee alex = new Employee(1, "Alex");
+        tm.addEmployee(alex);
 
-        // 3. Creăm task-uri (simple și complexe)
-        // Task simplu care NU e gata (durată: 3 ore)
-        SimpleTask st1 = new SimpleTask("In Progress", 101, 9, 12);
+        //TEST 1: COMPOSITE PATTERN & DURATION
+        // Level 1: Root task
+        ComplexTask root = new ComplexTask(100, "Completed");
+        tm.assignTaskToEmployee(1, root);
 
-        // Task simplu gata (durată: 2 ore)
-        SimpleTask st2 = new SimpleTask("Completed", 102, 14, 16);
+        // Level 2: Nested complex task
+        ComplexTask subComplex = new ComplexTask(200, "Completed");
+        tm.addSubTaskToComplexTask(1, 100, subComplex);
 
-        // Task simplu peste noapte, gata (durată: 22:00 -> 02:00 = 4 ore)
-        SimpleTask st3 = new SimpleTask("Completed", 103, 22, 2);
+        // Level 3: Simple tasks (5h + 4h)
+        tm.addSubTaskToComplexTask(1, 200, new SimpleTask("Completed", 301, 10, 15));
+        tm.addSubTaskToComplexTask(1, 200, new SimpleTask("Completed", 302, 22, 2));
 
-        // Task complex format din 2 sub-task-uri, ambele gata (durată totală: 1 + 2 = 3 ore)
-        ComplexTask ct1 = new ComplexTask(201, "Completed");
-        ct1.addTask(new SimpleTask("Completed", 202, 10, 11));
-        ct1.addTask(new SimpleTask("Completed", 203, 12, 14));
+        System.out.println("TEST 1: Total Duration");
+        System.out.println("Expected: 9 | Actual: " + tm.calculateEmployeeWorkDuration(1));
 
-        // 4. Atribuim task-urile
-        tm.assignTaskToEmployee(1, st1); // Alex primește st1
-        tm.assignTaskToEmployee(1, st2); // Alex primește st2
-        tm.assignTaskToEmployee(1, ct1); // Alex primește ct1
+        // TEST 2: STATUS IMPACT
+        System.out.println("\nTEST 2: Status Change Check ");
+        // Changing status shouldn't affect duration
+        tm.modifyTaskStatus(1, 301, "In Progress");
+        System.out.println("Expected (still 9): 9 | Actual: " + tm.calculateEmployeeWorkDuration(1));
 
-        tm.assignTaskToEmployee(2, st3); // Maria primește st3
+        //TEST 3: SORTING
+        System.out.println("\nTEST 3: Sorting Validation");
+        Employee ion = new Employee(2, "Ion"); // 50h
+        Employee ana = new Employee(3, "Ana"); // 45h
+        tm.addEmployee(ion);
+        tm.addEmployee(ana);
 
-        // 5. RULĂM TESTELE (Aici facem debugging)
-        System.out.println("=== TEST 1: Calcul durată inițială ===");
-        // Alex are: st1(In Progress, 3h) + st2(Completed, 2h) + ct1(Completed, 3h).
-        // Așteptăm: 2 + 3 = 5 ore (st1 trebuie ignorat).
-        System.out.println("Durata lui Alex (Așteptat: 5): " + tm.calculateEmployeeWorkDuration(1));
+        tm.assignTaskToEmployee(2, new SimpleTask("Completed", 401, 0, 25));
+        tm.assignTaskToEmployee(2, new SimpleTask("Completed", 402, 0, 25));
+        tm.assignTaskToEmployee(3, new SimpleTask("Completed", 501, 0, 20));
+        tm.assignTaskToEmployee(3, new SimpleTask("Completed", 502, 0, 25));
 
-        // Maria are: st3(Completed, 4h).
-        // Așteptăm: 4 ore.
-        System.out.println("Durata Mariei (Așteptat: 4): " + tm.calculateEmployeeWorkDuration(2));
-
-        System.out.println("\n=== TEST 2: Modificare status ===");
-        // Trecem task-ul st1 al lui Alex din "In Progress" în "Completed"
-        tm.modifyTaskStatus(1, 101, "Completed");
-
-        // Acum st1 (3 ore) ar trebui să se adune la total
-        // Așteptăm: 5 (vechi) + 3 (nou) = 8 ore.
-        System.out.println("Noua durată a lui Alex (Așteptat: 8): " + tm.calculateEmployeeWorkDuration(1));
-
-        System.out.println("\n=== TEST 3: Verificare structură Map ===");
-        // Printăm tot conținutul să vedem dacă to string-urile tale merg bine
-        tm.getTaskMap().forEach((angajat, listaTaskuri) -> {
-            System.out.println(angajat.toString());
-            for (int i = 0; i < listaTaskuri.size(); i++) {
-                System.out.println("  -> " + listaTaskuri.get(i).toString());
-            }
-        });
-        System.out.println("\n=== PREGATIRE DATE PENTRU TESTELE UTILITY ===");
-        // Creăm "sclavi pe plantație" ca să depășim 40 de ore
-        Employee emp3 = new Employee(3, "Ion");
-        Employee emp4 = new Employee(4, "Ana");
-        tm.addEmployee(emp3);
-        tm.addEmployee(emp4);
-
-        // Ion va avea 50 de ore în total (îi dăm 2 task-uri mari)
-        tm.assignTaskToEmployee(3, new SimpleTask("Completed", 301, 0, 25));
-        tm.assignTaskToEmployee(3, new SimpleTask("Completed", 302, 0, 25));
-
-        // Ana va avea 45 de ore în total
-        tm.assignTaskToEmployee(4, new SimpleTask("Completed", 401, 0, 20));
-        tm.assignTaskToEmployee(4, new SimpleTask("Completed", 402, 0, 25));
-
-        // Îi dăm Mariei un task neterminat ca să vedem dacă statisticile detectează asta
-        tm.assignTaskToEmployee(2, new SimpleTask("In Progress", 104, 10, 15));
-
-
-        // 6. RULĂM TESTELE PENTRU CLASA UTILITY
-        System.out.println("\n=== TEST 4: Utility - Filtrare angajati > 40 ore ===");
-        // Așteptăm: Ana (45 ore) să apară PRIMA, urmată de Ion (50 ore) - sortare crescătoare.
-        // Alex (8h) și Maria (4h) trebuie să fie ignorați complet.
-        Utility.filtersEmployee(tm);
-
-        System.out.println("\n=== TEST 5: Utility - Statistici Task-uri ===");
-        // Așteptăm ca Maria să aibă 1 Completed și 1 Uncompleted. Alex să aibă 3 Completed și 0 Uncompleted.
-        Map<String, Map<String, Integer>> stats = Utility.computesTasks(tm);
-
-        // Afișăm manual rezultatul Map-ului tău complex
-        for (Map.Entry<String, Map<String, Integer>> intrare : stats.entrySet()) {
-            String numeAngajat = intrare.getKey();
-            Map<String, Integer> detalii = intrare.getValue();
-
-            System.out.println("Angajat: " + numeAngajat);
-            System.out.println("  -> Completed: " + detalii.get("Completed"));
-            System.out.println("  -> Uncompleted: " + detalii.get("Uncompleted"));
+        // Utility method prints and returns sorted list
+        List<Employee> filtered = Utility.filtersEmployee(tm);
+        if(filtered.size() >= 2) {
+            System.out.println("First: " + filtered.get(0).getName() + " (Expected: Ana)");
+            System.out.println("Second: " + filtered.get(1).getName() + " (Expected: Ion)");
         }
 
-        // 7. RULĂM TESTUL PENTRU SERIALIZARE (I/O)
-        System.out.println("\n=== TEST 6: Serializare (Salvare pe disc) ===");
-        // Salvăm întregul obiect tm în fișier
-        SerializationOperations.saveDatabase(tm, "baza_date_test.ser");
+        // TEST 4: SERIALIZATION
+        System.out.println("\n TEST 4: Serialization Check");
+        tm.saveSystem("final_test.ser");
+        TaskManagement loaded = TaskManagement.loadSystem("final_test.ser");
 
-        System.out.println("\n=== TEST 7: Deserializare (Incarcare de pe disc) ===");
-        // Creăm o variabilă COMPLET NOUĂ și o umplem cu ce citim din fișier
-        TaskManagement tmIncarcatDinFisier = SerializationOperations.loadDatabase("baza_date_test.ser");
+        try {
+            int restoredDuration = loaded.calculateEmployeeWorkDuration(1);
+            System.out.println("Restored duration: " + restoredDuration + " (Expected: 9)");
 
-        // Verificăm dacă obiectul nou conține angajații și task-urile salvate
-        System.out.println("Verificam datele din sistemul recuperat:");
-        if (tmIncarcatDinFisier != null && tmIncarcatDinFisier.getTaskMap() != null) {
-            tmIncarcatDinFisier.getTaskMap().forEach((angajat, listaTaskuri) -> {
-                System.out.println("Recuperat cu succes: " + angajat.getName() + " -> are " + listaTaskuri.size() + " task-uri.");
-            });
+            if(restoredDuration == 9) {
+                System.out.println("SUCCESS: Object graph restored correctly.");
+            } else {
+                System.out.println("FAILURE: Data mismatch.");
+            }
+        } catch (Exception e) {
+            System.out.println("ERROR: Loading failed - " + e.getMessage());
+        }
+
+        //TEST 5: EDGE CASES & ERROR HANDLING
+        System.out.println("\nTEST 5: Error Handling & Edge Cases");
+
+        // 5.1 Duplicate Employee Check
+        int initialSize = tm.getTaskMap().size();
+        tm.addEmployee(new Employee(1, "Clone of Alex")); // ID 1 already exists
+        if(tm.getTaskMap().size() == initialSize) {
+            System.out.println("Success: Duplicate employee ID blocked.");
         } else {
-            System.out.println("EROARE: Sistemul incarcat este gol sau corupt!");
+            System.out.println("FAILURE: Duplicate ID allowed!");
+        }
+
+        // 5.2 Invalid Task Search
+        try {
+            // Task 999 does not exist
+            tm.modifyTaskStatus(1, 999, "Completed");
+            System.out.println("Check: System handled non-existent task ID.");
+        } catch (Exception e) {
+            System.out.println("Caught Expected Error: " + e.getMessage());
+        }
+
+        // 5.3 Empty System Utility Check
+        TaskManagement emptySystem = new TaskManagement();
+        try {
+            Utility.filtersEmployee(emptySystem);
+            Utility.computesTasks(emptySystem);
+            System.out.println("Success: Utility methods handled empty system without crashing.");
+        } catch (Exception e) {
+            System.out.println("FAILURE: Utility crashed on empty system! " + e.getMessage());
         }
     }
 }
