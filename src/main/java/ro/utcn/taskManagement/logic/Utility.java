@@ -1,5 +1,6 @@
 package ro.utcn.taskManagement.logic;
 
+import ro.utcn.taskManagement.model.ComplexTask;
 import ro.utcn.taskManagement.model.Employee;
 import ro.utcn.taskManagement.model.Task;
 
@@ -47,15 +48,13 @@ public class Utility {
         Map<String, Map<String, Integer>> resStats=new HashMap<>();
 
         for(Map.Entry<Employee, List<Task>> entry: tm.getTaskMap().entrySet()){
-            String name=entry.getKey().getName();
+            //to not override the employee with the same name
+            String name = entry.getKey().getName() + " (ID: " + entry.getKey().getIdEmployee() + ")";
             Map<String, Integer> taskCount =new HashMap<>();
-            int completedCount =0;
-            int uncompletedCount =0;
-            for(Task task: entry.getValue()){
-                if(task.getStatusTask().equalsIgnoreCase("Completed")){
-                    completedCount++;
-                }else uncompletedCount++;
-            }
+            int[] counts=new int[2];
+            countTasksRecursively(entry.getValue(), counts);
+            int completedCount =counts[0];
+            int uncompletedCount =counts[1];
             taskCount.put("Completed", completedCount);
             taskCount.put("Uncompleted", uncompletedCount);
 
@@ -63,4 +62,23 @@ public class Utility {
         }
         return resStats;
     }
+
+    // Recursive helper method to traverse the Composite task structure and count statuses
+    private static void countTasksRecursively(List<Task> tasks, int[] counts) {
+        if (tasks == null) return;
+
+        for (Task t : tasks) {
+            if ("Completed".equalsIgnoreCase(t.getStatusTask())) {
+                counts[0]++;
+            } else {
+                counts[1]++;
+            }
+
+            // we must verify the children too
+            if (t instanceof ComplexTask) {
+                countTasksRecursively(((ComplexTask) t).getSubTasks(), counts);
+            }
+        }
+    }
 }
+

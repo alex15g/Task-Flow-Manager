@@ -22,10 +22,12 @@ public class TaskManagement implements Serializable {
     }
 
     // Adds a new employee to the system if the ID is unique
-    public void addEmployee(Employee e) {
+    public boolean addEmployee(Employee e) {
         if(searchEmployee(e.getIdEmployee()) == null) {
             taskMap.put(e, new ArrayList<>());
+            return true;
         }
+        return false;
     }
 
     // Searches for an employee by their unique ID
@@ -46,16 +48,27 @@ public class TaskManagement implements Serializable {
         }
     }
 
-    // Calculates total hours only for tasks marked as "Completed"
+    // Calculates total hours only for tasks marked as "Completed" for a specific employee
+    //Initiates a DFS traversal to accurately sum up all "Completed" tasks
     public int calculateEmployeeWorkDuration(int idEmployee){
-        int duration=0;
         Employee e = searchEmployee(idEmployee);
         if(e!=null){
-            List<Task> tasks=taskMap.get(e);
-            for (Task t : tasks) {
-                if ("Completed".equalsIgnoreCase(t.getStatusTask())) {
-                    duration += t.estimateDuration();
-                }
+            return calculateDurationRecursively(taskMap.get(e));
+        }
+        return 0;
+    }
+
+    // Recursive helper method to traverse the task structure.
+    private int calculateDurationRecursively(List<Task> tasks) {
+        int duration = 0;
+        if (tasks == null) return 0;
+
+        for (Task t : tasks) {
+            if ("Completed".equalsIgnoreCase(t.getStatusTask())) {
+                duration += t.estimateDuration();
+            } else if (t instanceof ComplexTask) {
+                //The complex task is not completed, but some subtasks may be completed
+                duration += calculateDurationRecursively(((ComplexTask) t).getSubTasks());
             }
         }
         return duration;
@@ -77,6 +90,7 @@ public class TaskManagement implements Serializable {
         return null; //not found
     }
 
+    // Modifies the status of a specific task (simple or complex) assigned to an employee.
     public void modifyTaskStatus(int idEmployee, int idTask, String newStatus) throws Exception {
         Employee e = searchEmployee(idEmployee);
         if (e == null) throw new Exception("Employee not found!");

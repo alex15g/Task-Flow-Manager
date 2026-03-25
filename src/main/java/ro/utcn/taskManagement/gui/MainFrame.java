@@ -54,10 +54,24 @@ public class MainFrame extends JFrame {
         });
     }
 
+    // Recursive helper method that formats the tasks as a visual tree structure
+    private void buildTaskTreeString(Task t, int level, StringBuilder sb) {
+        // Generate spaces based on the current depth in the hierarchy
+        String indent = "    ".repeat(level);
+
+        // Append the current task details to the string builder
+        sb.append(indent).append("-> ").append(t.toString()).append(" | Duration: ").append(t.estimateDuration()).append("h\n");
+
+        if (t instanceof ComplexTask) {
+            for (Task child : ((ComplexTask) t).getSubTasks()) {
+                buildTaskTreeString(child, level + 1, sb);
+            }
+        }
+    }
+
     // Creates the tab responsible for displaying employees, adding new employees,
     //and filtering them.
     //return->A JPanel containing the employee management.
-
     private JPanel createEmployeeTab() {
         JPanel panel = new JPanel(new BorderLayout());
 
@@ -97,7 +111,9 @@ public class MainFrame extends JFrame {
                 }
 
                 Employee empNew = new Employee(id, name);
-                tm.addEmployee(empNew);
+                if (!tm.addEmployee(empNew)) {
+                    throw new Exception("The employee with this ID already exits.");
+                }
                 refreshEmployeeTable();
 
                 idField.setText("");
@@ -125,20 +141,30 @@ public class MainFrame extends JFrame {
                     return;
                 }
 
-                JTextArea textArea = new JTextArea(10, 30);
+                // Slightly enlarged JTextArea to properly fit the visual task tree
+                JTextArea textArea = new JTextArea(20, 50);
                 textArea.setEditable(false);
-                for (ro.utcn.taskManagement.model.Task t : tasks) {
-                    textArea.append(t.toString() + " | Duration: " + t.estimateDuration() + "h\n");
+
+                // Build the string recursively to display all nested sub-tasks
+                StringBuilder sb = new StringBuilder();
+                for (Task t : tasks) {
+                    // 0 represents the root indentation level
+                    buildTaskTreeString(t, 0, sb);
                 }
 
+                textArea.setText(sb.toString());
 
                 JScrollPane scrollTasks = new JScrollPane(textArea);
                 JOptionPane.showMessageDialog(this, scrollTasks, "Tasks for " + emp.getName(), JOptionPane.INFORMATION_MESSAGE);
 
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Please enter a valid numeric Employee ID.", "Error", JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Please enter a valid Employee ID.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
+
+
 
         btnFilter.addActionListener(e -> {
             java.util.List<Employee> result=filtersEmployee(tm);

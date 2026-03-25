@@ -26,11 +26,25 @@ public final class ComplexTask extends Task{
         return duration;
     }
 
-    public List<Task> getSubTasks() {
-        return subTasks;
+    // Recursively calculates the TOTAL number of sub-tasks
+    public int getTotalSubtasksCount() {
+        int count = 0;
+        for (Task t : this.subTasks) {
+            count++; // Count the immediate child
+
+            if (t instanceof ComplexTask) {
+                count += ((ComplexTask) t).getTotalSubtasksCount();
+            }
+        }
+        return count;
     }
 
-    public String toString(){
-        return "Complex Task: "+super.toString()+", Subtasks count: "+subTasks.size();
+    @Override
+    public String toString() {
+        return "Complex Task: " + super.toString() + ", Total subtasks: " + getTotalSubtasksCount();
+    }
+
+    public List<Task> getSubTasks() {
+        return subTasks;
     }
 }
