@@ -19,13 +19,14 @@ A desktop application designed to manage employee workloads, task delegation, an
 
 ### Employee Overview & Task Hierarchy
 Managers can view all registered employees, their total logged hours, and inspect the specific recursive structure of their assigned tasks.
-![Employee Management](<img width="1562" height="1177" alt="ss_task_flow_manager_1" src="https://github.com/user-attachments/assets/7a5fe988-7ba3-4ff4-8c80-d69cb85866d3" />
-)
+<img width="1562" height="1177" alt="ss_task_flow_manager_1" src="https://github.com/user-attachments/assets/5f3782af-3a19-4dd6-afd5-d371694c2197" />
+
 
 ### Task Assignment & Status Updates
 The system allows dynamic assignment of simple or complex tasks, appending sub-tasks to existing complex structures, and real-time status modifications.
-![Task Management](docs/task_management.png)
+<img width="1568" height="509" alt="ss_task_flow_manager_2" src="https://github.com/user-attachments/assets/66930666-b60f-47aa-92a6-184288394530" />
+
 
 ### Productivity Statistics
 Automated generation of performance metrics, categorizing task completion statuses across the entire workforce.
-![Statistics](docs/statistics.png)
+<img width="1564" height="1172" alt="ss_task_flow_manager_3" src="https://github.com/user-attachments/assets/cae3cb99-b37a-4a6b-bc34-29af92026bae" />
